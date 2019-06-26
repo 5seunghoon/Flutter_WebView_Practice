@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'webview_scaffold.dart';
 import 'webview_base.dart';
 
 class WebviewActionbar extends StatelessWidget {
-  static String urlString = "https://flutter.io";
+  static String urlString = "http://www.naver.com";
 
   final _flutterWebViewPlugin = FlutterWebviewPlugin();
 
@@ -12,9 +11,9 @@ class WebviewActionbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _urlTextEditController.addListener(() {
-      urlString = _urlTextEditController.text;
-      print("urlString : $urlString");
+    _flutterWebViewPlugin.onUrlChanged.listen((String url) {
+      _urlTextEditController.text = url;
+      print("url on change : $url");
     });
 
     return Container(
@@ -26,7 +25,7 @@ class WebviewActionbar extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Container(
               width: double.infinity,
-              height: 28.0,
+              height: 54.0,
               child: Row(
                 children: <Widget>[
                   IconButton(
@@ -43,6 +42,10 @@ class WebviewActionbar extends StatelessWidget {
                   ),
                   Flexible(
                     child: TextField(
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 13,
+                      ),
                       controller: _urlTextEditController,
                       keyboardType: TextInputType.url,
                       onSubmitted: (String str) {
