@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../webview/webview_base.dart';
 import '../util/empty_app_bar.dart';
+import '../model/webtab.dart';
 import 'tablist_bloc.dart';
 
 class TabListState extends State<TabListWidget> {
@@ -21,11 +22,12 @@ class TabListState extends State<TabListWidget> {
         body: Center(
             child: ListView.builder(
           itemBuilder: (context, i) {
+            WebTab webTab = _tabListBloc.getTabList()[i];
             return ListTile(
-              title: Text(_tabListBloc.getUrlList()[i].toString()),
+              title: Text("url : ${webTab.url}, id : ${webTab.id}"),
             );
           },
-          itemCount: _tabListBloc.getUrlList().length,
+          itemCount: _tabListBloc.getTabList().length,
         )),
       ),
       onWillPop: () {

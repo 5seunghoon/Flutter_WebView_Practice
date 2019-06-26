@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import '../model/webtab.dart';
+
 class TabListBloc {
   static final TabListBloc _instance = TabListBloc._internal();
 
-  List<String> _urlList = [];
+  List<WebTab> _tabList = [];
 
   factory TabListBloc() {
     return _instance;
@@ -11,13 +13,26 @@ class TabListBloc {
 
   TabListBloc._internal();
 
-  void addUrl(String url) {
-    print("add url : $url");
-    _urlList.add(url);
+  void addExistTab(WebTab tab) {
+    bool findSameTab = false;
+
+    _tabList.forEach((var t) {
+      if (t.id == tab.id) {
+        t.url = tab.url;
+        findSameTab = true;
+        return;
+      }
+    });
+
+    if (!findSameTab) _tabList.add(tab);
   }
 
-  List<String> getUrlList() {
-    return _urlList;
+  WebTab addNewTab() {
+    return WebTab(99, "");
+  }
+
+  List<WebTab> getTabList() {
+    return _tabList;
   }
 
   void dispose() {}

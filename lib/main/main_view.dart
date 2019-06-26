@@ -5,6 +5,7 @@ import '../webview/webview_base.dart';
 import '../util/empty_app_bar.dart';
 import 'main_bloc.dart';
 import '../tablist/tablist_bloc.dart';
+import '../model/webtab.dart';
 
 class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
   @override
@@ -53,7 +54,7 @@ class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
               icon : const Icon(Icons.content_copy),
               onPressed: () {
                 widget._flutterWebViewPlugin.hide();
-                TabListBloc().addUrl(widget._mainWebViewBloc.getUrl());
+                TabListBloc().addExistTab(WebTab(widget._mainWebViewBloc.tabId, widget._mainWebViewBloc.getUrl()));
                 Navigator.of(context).pushNamed("/tablist");
               },
             )
