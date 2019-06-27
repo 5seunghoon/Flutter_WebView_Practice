@@ -3,13 +3,10 @@ import 'dart:async';
 import '../webview/webview_base.dart';
 
 class MainWebViewBloc {
-  static final String naverUrl = "http://www.naver.com";
   static final MainWebViewBloc _instance = MainWebViewBloc._internal();
   final _flutterWebViewPlugin = FlutterWebviewPlugin();
 
-  String homeUrl = naverUrl;
   String _nowUrl = "";
-  int tabId = 0;
 
   factory MainWebViewBloc() {
     return _instance;

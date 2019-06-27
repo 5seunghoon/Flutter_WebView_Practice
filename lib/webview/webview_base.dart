@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 
 const _kChannel = 'flutter_webview_plugin';
 
+final String homeUrl = "http://www.naver.com";
+var nowTabId = 0;
+
 // TODO: more general state for iOS/android
 enum WebViewState { shouldStart, startLoad, finishLoad, abortLoad }
 

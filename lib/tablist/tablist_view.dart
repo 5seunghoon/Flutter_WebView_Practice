@@ -19,20 +19,71 @@ class TabListState extends State<TabListWidget> {
     return WillPopScope(
       child: Scaffold(
         appBar: EmptyAppBar(),
-        body: Center(
-            child: ListView.builder(
-          itemBuilder: (context, i) {
-            WebTab webTab = _tabListBloc.getTabList()[i];
-            return ListTile(
-              title: Text("url : ${webTab.url}, id : ${webTab.id}"),
-            );
-          },
-          itemCount: _tabListBloc.getTabList().length,
-        )),
+        body: Column(
+          children: <Widget>[
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: (context, i) {
+                  WebTab webTab = _tabListBloc.getTabList()[i];
+                  return _tabTile(webTab);
+                },
+                itemCount: _tabListBloc.getTabList().length,
+              ),
+            ),
+            _addTabButtonTile()
+          ],
+        ),
       ),
       onWillPop: () {
         widget._flutterWebViewPlugin.show();
         return Future(() => true);
+      },
+    );
+  }
+
+  Widget _tabTile(WebTab webTab) {
+    return Card(
+      child: ListTile(
+        title: Text("url : ${webTab.url}, id : ${webTab.id}"),
+        trailing: IconButton(
+          icon: Icon(
+            Icons.remove,
+            color: Colors.green,
+          ),
+          onPressed: () {
+            setState(() {
+              widget._tabListBloc.removeTab(webTab.id);
+            });
+          },
+        ),
+        onTap: () {
+          widget._flutterWebViewPlugin.reloadUrl(webTab.url);
+          widget._flutterWebViewPlugin.show();
+          nowTabId = webTab.id;
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _addTabButtonTile() {
+    return ListTile(
+      title: IconButton(
+        icon: Icon(
+          Icons.add,
+          color: Colors.green,
+        ),
+      ),
+      onTap: () {
+        var newTab = widget._tabListBloc.addNewTab();
+        widget._flutterWebViewPlugin.reloadUrl(newTab.url);
+        widget._flutterWebViewPlugin.show();
+        nowTabId = newTab.id;
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
       },
     );
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../webview/webview_base.dart';
 import '../model/webtab.dart';
 
 class TabListBloc {
@@ -28,7 +29,11 @@ class TabListBloc {
   }
 
   WebTab addNewTab() {
-    return WebTab(99, "");
+    var newId = _tabList.last.id + 1;
+    var newUrl = homeUrl;
+    var newTab = WebTab(newId, newUrl);
+    _tabList.add(newTab);
+    return newTab;
   }
 
   List<WebTab> getTabList() {
@@ -36,4 +41,9 @@ class TabListBloc {
   }
 
   void dispose() {}
+
+  void removeTab(int id) {
+    if(_tabList.length == 0) return;
+    _tabList.removeWhere((var element) => element.id == id);
+  }
 }

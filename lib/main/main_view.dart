@@ -17,7 +17,7 @@ class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
   @override
   Widget build(BuildContext context) {
     return WebviewScaffold(
-      url: widget._mainWebViewBloc.homeUrl,
+      url: homeUrl,
       appBar: EmptyAppBar(),
       withZoom: true,
       withLocalStorage: true,
@@ -54,7 +54,7 @@ class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
               icon : const Icon(Icons.content_copy),
               onPressed: () {
                 widget._flutterWebViewPlugin.hide();
-                TabListBloc().addExistTab(WebTab(widget._mainWebViewBloc.tabId, widget._mainWebViewBloc.getUrl()));
+                TabListBloc().addExistTab(WebTab(nowTabId, widget._mainWebViewBloc.getUrl()));
                 Navigator.of(context).pushNamed("/tablist");
               },
             )
