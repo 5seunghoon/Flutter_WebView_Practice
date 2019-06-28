@@ -8,11 +8,20 @@ class TabListBloc {
 
   List<WebTab> _tabList = [];
 
+  Map<int, String> _tabImageFilePathMap = {};
+
   factory TabListBloc() {
     return _instance;
   }
 
   TabListBloc._internal();
+
+  void tabImageFilePathMapClear() => _tabImageFilePathMap.clear();
+
+  String getTabImageFilePath(int id) => _tabImageFilePathMap[id];
+
+  void setTabImageFilePath(int id, String path) =>
+      _tabImageFilePathMap[id] = path;
 
   void addExistTab(WebTab tab) {
     bool findSameTab = false;
@@ -43,7 +52,7 @@ class TabListBloc {
   void dispose() {}
 
   void removeTab(int id) {
-    if(_tabList.length == 0) return;
+    if (_tabList.length == 0) return;
     _tabList.removeWhere((var element) => element.id == id);
   }
 }

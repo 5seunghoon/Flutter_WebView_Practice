@@ -12,7 +12,7 @@ dependencies:
 
   cupertino_icons: ^0.1.2
   url_launcher : ^5.0.3
-  flutter_webview_plugin : ^0.3.5
+  path_provider : ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -20,3 +20,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/

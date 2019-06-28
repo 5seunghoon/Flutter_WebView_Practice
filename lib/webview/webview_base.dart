@@ -63,7 +63,8 @@ class FlutterWebviewPlugin {
         );
         break;
       case 'onHttpError':
-        _onHttpError.add(WebViewHttpError(call.arguments['code'], call.arguments['url']));
+        _onHttpError.add(
+            WebViewHttpError(call.arguments['code'], call.arguments['url']));
         break;
     }
   }
@@ -114,7 +115,8 @@ class FlutterWebviewPlugin {
   /// - [invalidUrlRegex] is the regular expression of URLs that web view shouldn't load.
   /// For example, when webview is redirected to a specific URL, you want to intercept
   /// this process by stopping loading this URL and replacing webview by another screen.
-  Future<Null> launch(String url, {
+  Future<Null> launch(
+    String url, {
     Map<String, String> headers,
     bool withJavascript,
     bool clearCache,
@@ -175,6 +177,17 @@ class FlutterWebviewPlugin {
     return res;
   }
 
+  /// Capture the Webview
+  Future<Null> capture({
+    int tabId
+  }) async {
+    final args = <String, dynamic> {
+      'tabId' : tabId ?? 0
+    };
+
+    await _channel.invokeMethod('capture', args);
+  }
+
   /// Close the Webview
   /// Will trigger the [onDestroy] event
   Future<Null> close() async => await _channel.invokeMethod('close');
@@ -201,10 +214,12 @@ class FlutterWebviewPlugin {
   }
 
   // Clean cookies on WebView
-  Future<Null> cleanCookies() async => await _channel.invokeMethod('cleanCookies');
+  Future<Null> cleanCookies() async =>
+      await _channel.invokeMethod('cleanCookies');
 
   // Stops current loading process
-  Future<Null> stopLoading() async => await _channel.invokeMethod('stopLoading');
+  Future<Null> stopLoading() async =>
+      await _channel.invokeMethod('stopLoading');
 
   /// Close all Streams
   void dispose() {

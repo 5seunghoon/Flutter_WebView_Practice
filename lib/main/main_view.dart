@@ -1,4 +1,12 @@
+import 'dart:io';
+import 'dart:async';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../webview/webview_scaffold.dart';
 import '../webview/webview_base.dart';
@@ -22,18 +30,21 @@ class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
       withZoom: true,
       withLocalStorage: true,
       hidden: true,
-      initialChild: Container(
-        color: Colors.white,
-        child: const Center(
-          child: Text('Waiting.....'),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: _bottomAppbar(),
+    );
+  }
+
+  Widget _bottomAppbar() {
+    return BottomAppBar(
+      child: IconTheme(
+        data: IconThemeData(color: Colors.green),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
+              icon: const Icon(
+                Icons.arrow_back_ios,
+              ),
               onPressed: () {
                 widget._flutterWebViewPlugin.goBack();
               },
@@ -51,11 +62,22 @@ class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
               },
             ),
             IconButton(
-              icon : const Icon(Icons.content_copy),
+              icon: const Icon(Icons.content_copy),
               onPressed: () {
+                print("nowTabId : $nowTabId");
+                widget._flutterWebViewPlugin.capture(tabId: nowTabId);
+
                 widget._flutterWebViewPlugin.hide();
-                TabListBloc().addExistTab(WebTab(nowTabId, widget._mainWebViewBloc.getUrl()));
+                TabListBloc().addExistTab(
+                    WebTab(nowTabId, widget._mainWebViewBloc.getUrl()));
                 Navigator.of(context).pushNamed("/tablist");
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.mobile_screen_share),
+              onPressed: () {
+                print("nowTabId : $nowTabId");
+                widget._flutterWebViewPlugin.capture(tabId: nowTabId);
               },
             )
           ],

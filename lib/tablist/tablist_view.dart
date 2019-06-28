@@ -1,4 +1,12 @@
+import 'dart:io';
+import 'dart:async';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 import '../webview/webview_base.dart';
 import '../util/empty_app_bar.dart';
@@ -6,30 +14,44 @@ import '../model/webtab.dart';
 import 'tablist_bloc.dart';
 
 class TabListState extends State<TabListWidget> {
+  var previewContainer = new GlobalKey();
   TabListBloc _tabListBloc = TabListBloc();
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void dispose() {
+    print("dispose");
+    widget._tabListBloc.tabImageFilePathMapClear();
     widget._tabListBloc.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    imageCache.clear();
+
     return WillPopScope(
       child: Scaffold(
         appBar: EmptyAppBar(),
         body: Column(
           children: <Widget>[
             Expanded(
-              child: ListView.builder(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(4.0),
+                gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, childAspectRatio: 0.6),
+                itemCount: _tabListBloc.getTabList().length,
                 itemBuilder: (context, i) {
                   WebTab webTab = _tabListBloc.getTabList()[i];
-                  return _tabTile(webTab);
+                  return _tabTile(webTab, context);
                 },
-                itemCount: _tabListBloc.getTabList().length,
               ),
             ),
+            Divider(),
             _addTabButtonTile()
           ],
         ),
@@ -41,20 +63,49 @@ class TabListState extends State<TabListWidget> {
     );
   }
 
-  Widget _tabTile(WebTab webTab) {
+  Widget _tabTile(WebTab webTab, BuildContext context) {
+    final int _urlMaxLength = 22;
+    int _urlLength =
+        webTab.url.length > _urlMaxLength ? _urlMaxLength : webTab.url.length;
+
     return Card(
       child: ListTile(
-        title: Text("url : ${webTab.url}, id : ${webTab.id}"),
-        trailing: IconButton(
-          icon: Icon(
-            Icons.remove,
-            color: Colors.green,
-          ),
-          onPressed: () {
-            setState(() {
-              widget._tabListBloc.removeTab(webTab.id);
-            });
-          },
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 5.0),
+                  child: Text(
+                    "${webTab.id}",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+                Text(
+                  "${webTab.url.substring(8, _urlLength)}",
+                  style: TextStyle(fontSize: 12),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.remove,
+                    color: Colors.green,
+                  ),
+                  onPressed: () {
+                    this.setState(() {
+                      widget._tabListBloc.removeTab(webTab.id);
+                    });
+                  },
+                ),
+              ],
+            ),
+            Center(
+              child: _tabImageWidget(webTab),
+            ),
+          ],
         ),
         onTap: () {
           widget._flutterWebViewPlugin.reloadUrl(webTab.url);
@@ -66,6 +117,28 @@ class TabListState extends State<TabListWidget> {
         },
       ),
     );
+  }
+
+  Widget _tabImageWidget(WebTab webTab) {
+    var tabImageFilePath = widget._tabListBloc.getTabImageFilePath(webTab.id);
+    if (tabImageFilePath == null) {
+      _loadTabImage(webTab);
+      return Image.asset("notfound.png");
+    } else {
+      print("image path : $tabImageFilePath");
+      return Image.file(File(tabImageFilePath));
+    }
+  }
+
+  void _loadTabImage(WebTab webTab) {
+    getApplicationDocumentsDirectory().then((var dir) {
+      setState(() {
+        String tabImageFilePath =
+            dir.path + "/screenshot" + webTab.getTabIdToThreeWords + ".jpg";
+        print("app doc dir : $tabImageFilePath");
+        widget._tabListBloc.setTabImageFilePath(webTab.id, tabImageFilePath);
+      });
+    });
   }
 
   Widget _addTabButtonTile() {
