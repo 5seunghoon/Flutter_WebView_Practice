@@ -68,9 +68,12 @@ class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
                 widget._flutterWebViewPlugin.capture(tabId: nowTabId);
 
                 widget._flutterWebViewPlugin.hide();
-                TabListBloc().addExistTab(
-                    WebTab(nowTabId, widget._mainWebViewBloc.getUrl()));
-                Navigator.of(context).pushNamed("/tablist");
+                WebTab.insertWebTab(WebTab(
+                  id: nowTabId,
+                  url: widget._mainWebViewBloc.getUrl(),
+                )).then((_) => Navigator.of(context).pushNamed("/tablist"));
+                //TabListBloc().addExistTab(WebTab(id: nowTabId, url: widget._mainWebViewBloc.getUrl()));
+                //Navigator.of(context).pushNamed("/tablist");
               },
             ),
             IconButton(

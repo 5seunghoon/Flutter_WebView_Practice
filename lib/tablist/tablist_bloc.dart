@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import '../webview/webview_base.dart';
 import '../model/webtab.dart';
 
@@ -7,6 +5,9 @@ class TabListBloc {
   static final TabListBloc _instance = TabListBloc._internal();
 
   List<WebTab> _tabList = [];
+
+  int get tabListLength => _tabList.length;
+  bool alreadyReadAllDb = false;
 
   Map<int, String> _tabImageFilePathMap = {};
 
@@ -40,7 +41,7 @@ class TabListBloc {
   WebTab addNewTab() {
     var newId = _tabList.last.id + 1;
     var newUrl = homeUrl;
-    var newTab = WebTab(newId, newUrl);
+    var newTab = WebTab(id: newId, url: newUrl);
     _tabList.add(newTab);
     return newTab;
   }
@@ -52,7 +53,13 @@ class TabListBloc {
   void dispose() {}
 
   void removeTab(int id) {
-    if (_tabList.length == 0) return;
+    if (_tabList.length == 1) return;
     _tabList.removeWhere((var element) => element.id == id);
+    WebTab.deleteWebTab(id);
+  }
+
+  Future<Null> getAllWebTabInDb() async {
+    List<WebTab> webtabs = await WebTab.getAllWebTabs();
+    webtabs.forEach((var webtab) => _tabList.add(webtab));
   }
 }

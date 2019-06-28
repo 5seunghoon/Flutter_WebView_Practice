@@ -32,7 +32,14 @@ class TabListState extends State<TabListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    imageCache.clear();
+    imageCache.clear(); // 중요. 캐시를 안지우면 이전에 캡쳐한 탭 이미지가 계속 뜸
+
+    if(!_tabListBloc.alreadyReadAllDb) {
+      _tabListBloc.getAllWebTabInDb().then((_) {
+        _tabListBloc.alreadyReadAllDb = true;
+        setState(() {});
+      });
+    }
 
     return WillPopScope(
       child: Scaffold(
@@ -95,7 +102,7 @@ class TabListState extends State<TabListWidget> {
                     color: Colors.green,
                   ),
                   onPressed: () {
-                    this.setState(() {
+                    setState(() {
                       widget._tabListBloc.removeTab(webTab.id);
                     });
                   },
@@ -143,14 +150,13 @@ class TabListState extends State<TabListWidget> {
 
   Widget _addTabButtonTile() {
     return ListTile(
-      title: IconButton(
-        icon: Icon(
-          Icons.add,
-          color: Colors.green,
-        ),
+      title: Icon(
+        Icons.add,
+        color: Colors.green,
       ),
       onTap: () {
         var newTab = widget._tabListBloc.addNewTab();
+        WebTab.insertWebTab(newTab);
         widget._flutterWebViewPlugin.reloadUrl(newTab.url);
         widget._flutterWebViewPlugin.show();
         nowTabId = newTab.id;
