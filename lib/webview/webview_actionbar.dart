@@ -36,63 +36,66 @@ class WebviewActionbarState extends State<WebviewActionbar> {
       });
     });
 
-    return AnimatedOpacity(
-      opacity: widget._appbarVisible ? 1.0 : 0.0,
+    return AnimatedContainer(
       duration: Duration(milliseconds: 200),
-      child: Container(
-          width: double.infinity,
-          height: 54.0,
-          decoration: BoxDecoration(color: Colors.white),
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                width: double.infinity,
-                height: 54.0,
-                child: Row(
-                  children: <Widget>[
-                    IconButton(
-                      padding: EdgeInsets.all(0.0),
-                      icon: Icon(
-                        Icons.trip_origin,
-                        color: Colors.green,
-                      ),
-                      onPressed: () {
-                        WebviewActionbar.urlString = "http://www.naver.com";
-                        widget._urlTextEditController.text =
-                            WebviewActionbar.urlString;
-                        widget._flutterWebViewPlugin
-                            .reloadUrl(WebviewActionbar.urlString);
-                      },
-                    ),
-                    Flexible(
-                      child: TextField(
-                        maxLines: 1,
-                        style: TextStyle(
-                          fontSize: 13,
+      child: AnimatedOpacity(
+        opacity: widget._appbarVisible ? 1.0 : 0.0,
+        duration: Duration(milliseconds: 200),
+        child: Container(
+            width: double.infinity,
+            height: 54.0,
+            decoration: BoxDecoration(color: Colors.white),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  width: double.infinity,
+                  height: 54.0,
+                  child: Row(
+                    children: <Widget>[
+                      IconButton(
+                        padding: EdgeInsets.all(0.0),
+                        icon: Icon(
+                          Icons.trip_origin,
+                          color: Colors.green,
                         ),
-                        controller: widget._urlTextEditController,
-                        keyboardType: TextInputType.url,
-                        onSubmitted: (String str) {
-                          widget._flutterWebViewPlugin.reloadUrl(str);
-                          widget._urlTextEditController.text = str;
+                        onPressed: () {
+                          WebviewActionbar.urlString = "http://www.naver.com";
+                          widget._urlTextEditController.text =
+                              WebviewActionbar.urlString;
+                          widget._flutterWebViewPlugin
+                              .reloadUrl(WebviewActionbar.urlString);
                         },
                       ),
-                      flex: 1,
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.all(0.0),
-                      icon: Icon(Icons.arrow_forward),
-                      onPressed: () {
-                        widget._flutterWebViewPlugin
-                            .reloadUrl(WebviewActionbar.urlString);
-                      },
-                    )
-                  ],
+                      Flexible(
+                        child: TextField(
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 13,
+                          ),
+                          controller: widget._urlTextEditController,
+                          keyboardType: TextInputType.url,
+                          onSubmitted: (String str) {
+                            widget._flutterWebViewPlugin.reloadUrl(str);
+                            widget._urlTextEditController.text = str;
+                          },
+                        ),
+                        flex: 1,
+                      ),
+                      IconButton(
+                        padding: EdgeInsets.all(0.0),
+                        icon: Icon(Icons.arrow_forward),
+                        onPressed: () {
+                          widget._flutterWebViewPlugin
+                              .reloadUrl(WebviewActionbar.urlString);
+                        },
+                      )
+                    ],
+                  ),
                 ),
               ),
-            ),
-          )),
+            )),
+      ),
     );
   }
 }
