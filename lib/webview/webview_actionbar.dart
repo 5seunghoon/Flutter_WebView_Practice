@@ -9,92 +9,104 @@ class WebviewActionbar extends StatefulWidget {
 
   final _urlTextEditController = TextEditingController(text: urlString);
 
-  bool _appbarVisible = true;
+  static final double appBarHeight = 54.0;
+  double _animationAppBarHeight = appBarHeight;
   double _prevYDirection = 0.0;
 
   @override
   State<StatefulWidget> createState() => WebviewActionbarState();
 }
 
-class WebviewActionbarState extends State<WebviewActionbar> {
+class WebviewActionbarState extends State<WebviewActionbar>
+    with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
+    _setUrlChangeListener();
+    _setScrollListener();
+
+    return _scrollRemoveAnimation(_appBarWidget());
+  }
+
+  void _setUrlChangeListener() {
     widget._flutterWebViewPlugin.onUrlChanged.listen((String url) {
       widget._urlTextEditController.text = url;
       print("url on change : $url");
     });
+  }
+
+  void _setScrollListener() {
     widget._flutterWebViewPlugin.onScrollYChanged.listen((double y) {
       setState(() {
         if (widget._prevYDirection < y) {
           // scroll down
-          widget._appbarVisible = false;
+          widget._animationAppBarHeight = 0.0;
         } else if (widget._prevYDirection > y) {
           // scroll up
-          widget._appbarVisible = true;
+          widget._animationAppBarHeight = WebviewActionbar.appBarHeight;
         }
         widget._prevYDirection = y;
       });
     });
+  }
 
+  Widget _scrollRemoveAnimation(Widget childWidget) {
+    /// 스크롤시 앱바가 사라지게 하는 애니메이션을 설정하는 부분
     return AnimatedContainer(
       duration: Duration(milliseconds: 200),
-      child: AnimatedOpacity(
-        opacity: widget._appbarVisible ? 1.0 : 0.0,
-        duration: Duration(milliseconds: 200),
-        child: Container(
-            width: double.infinity,
-            height: 54.0,
-            decoration: BoxDecoration(color: Colors.white),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width: double.infinity,
-                  height: 54.0,
-                  child: Row(
-                    children: <Widget>[
-                      IconButton(
-                        padding: EdgeInsets.all(0.0),
-                        icon: Icon(
-                          Icons.trip_origin,
-                          color: Colors.green,
-                        ),
-                        onPressed: () {
-                          WebviewActionbar.urlString = "http://www.naver.com";
-                          widget._urlTextEditController.text =
-                              WebviewActionbar.urlString;
-                          widget._flutterWebViewPlugin
-                              .reloadUrl(WebviewActionbar.urlString);
-                        },
-                      ),
-                      Flexible(
-                        child: TextField(
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 13,
-                          ),
-                          controller: widget._urlTextEditController,
-                          keyboardType: TextInputType.url,
-                          onSubmitted: (String str) {
-                            widget._flutterWebViewPlugin.reloadUrl(str);
-                            widget._urlTextEditController.text = str;
-                          },
-                        ),
-                        flex: 1,
-                      ),
-                      IconButton(
-                        padding: EdgeInsets.all(0.0),
-                        icon: Icon(Icons.arrow_forward),
-                        onPressed: () {
-                          widget._flutterWebViewPlugin
-                              .reloadUrl(WebviewActionbar.urlString);
-                        },
-                      )
-                    ],
-                  ),
-                ),
+      height: widget._animationAppBarHeight,
+      width: double.infinity,
+      decoration: BoxDecoration(color: Colors.white),
+      child: ClipRect(
+        child: Align(alignment: Alignment.bottomCenter, child: childWidget),
+      ),
+    );
+  }
+
+  Widget _appBarWidget() {
+    /// 앱 바 본체 위젯
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            IconButton(
+              padding: EdgeInsets.all(0.0),
+              icon: Icon(
+                Icons.trip_origin,
+                color: Colors.green,
               ),
-            )),
+              onPressed: () {
+                WebviewActionbar.urlString = "http://www.naver.com";
+                widget._urlTextEditController.text = WebviewActionbar.urlString;
+                widget._flutterWebViewPlugin
+                    .reloadUrl(WebviewActionbar.urlString);
+              },
+            ),
+            Expanded(
+              child: TextField(
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 13,
+                ),
+                controller: widget._urlTextEditController,
+                keyboardType: TextInputType.url,
+                onSubmitted: (String str) {
+                  widget._flutterWebViewPlugin.reloadUrl(str);
+                  widget._urlTextEditController.text = str;
+                },
+              ),
+            ),
+            IconButton(
+              padding: EdgeInsets.all(0.0),
+              icon: Icon(Icons.arrow_forward),
+              onPressed: () {
+                widget._flutterWebViewPlugin
+                    .reloadUrl(WebviewActionbar.urlString);
+              },
+            )
+          ],
+        ),
       ),
     );
   }
