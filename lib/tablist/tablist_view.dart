@@ -17,9 +17,6 @@ class TabListState extends State<TabListWidget> {
   var previewContainer = new GlobalKey();
   TabListBloc _tabListBloc = TabListBloc();
 
-  BoxDecoration _boxDecoration = BoxDecoration(color: Colors.white);
-  //EdgeInsets _cardPadding = EdgeInsets.only(right:50.0);
-
   @override
   void initState() {
     super.initState();
@@ -36,6 +33,7 @@ class TabListState extends State<TabListWidget> {
   Widget build(BuildContext context) {
     imageCache.clear(); // 중요. 캐시를 안지우면 이전에 캡쳐한 탭 이미지가 계속 뜸
 
+    // 탭 리스트를 DB에서 읽은 뒤 setState
     if (!_tabListBloc.isReadAllDb) {
       _tabListBloc.getAllWebTabInDb().then((_) {
         _tabListBloc.isReadAllDb = true; // setState 로 인해 또 호출되는 것을 방지
@@ -44,6 +42,7 @@ class TabListState extends State<TabListWidget> {
       });
     }
 
+    // 애니메이션을 시작한 뒤 setState
     if(!_tabListBloc.isStartAnimation){
       _tabListBloc.isStartAnimation = true; // setState 로 인해 또 호출되는 것을 방지
       _tabListBloc.startBoxDecorationAnimation(this);
@@ -54,18 +53,7 @@ class TabListState extends State<TabListWidget> {
         appBar: EmptyAppBar(),
         body: Column(
           children: <Widget>[
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(4.0),
-                gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, childAspectRatio: 0.6),
-                itemCount: _tabListBloc.getTabList().length,
-                itemBuilder: (context, i) {
-                  WebTab webTab = _tabListBloc.getTabList()[i];
-                  return _tabTile(i, webTab, context);
-                },
-              ),
-            ),
+            _tabGridView(),
             Divider(),
             _addTabButtonTile()
           ],
@@ -78,11 +66,22 @@ class TabListState extends State<TabListWidget> {
     );
   }
 
-  Widget _tabTile(int index, WebTab webTab, BuildContext context) {
-    final int _urlMaxLength = 22;
-    int _urlLength =
-        webTab.url.length > _urlMaxLength ? _urlMaxLength : webTab.url.length;
+  Widget _tabGridView() {
+    return Expanded(
+      child: GridView.builder(
+        padding: const EdgeInsets.all(4.0),
+        gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, childAspectRatio: 0.6),
+        itemCount: _tabListBloc.getTabList().length,
+        itemBuilder: (context, i) {
+          WebTab webTab = _tabListBloc.getTabList()[i];
+          return _tabTile(i, webTab, context);
+        },
+      ),
+    );
+  }
 
+  Widget _tabTile(int index, WebTab webTab, BuildContext context) {
     return AnimatedContainer(
       foregroundDecoration: _tabListBloc.getBoxDecoration(index),
       duration: Duration(milliseconds: TabListBloc.durationOfAnimationMilli),
@@ -93,53 +92,62 @@ class TabListState extends State<TabListWidget> {
             mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 5.0),
-                    child: Text(
-                      "${webTab.id}",
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  Text(
-                    "${webTab.url.substring(8, _urlLength)}",
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.remove,
-                      color: Colors.green,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        widget._tabListBloc.removeTab(webTab.id);
-                      });
-                    },
-                  ),
-                ],
-              ),
+              _tabInfoWidget(webTab),
               Center(
                 child: _tabImageWidget(webTab),
               ),
             ],
           ),
-          onTap: () {
-            widget._flutterWebViewPlugin.reloadUrl(webTab.url);
-            widget._flutterWebViewPlugin.show();
-            nowTabId = webTab.id;
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
+          onTap: () => _onTabTap(context, webTab),
         ),
       ),
     );
   }
 
+  void _onTabTap(BuildContext context, WebTab webTab) {
+    widget._flutterWebViewPlugin.reloadUrl(webTab.url);
+    widget._flutterWebViewPlugin.show();
+    nowTabId = webTab.id;
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
+
+  Widget _tabInfoWidget(WebTab webTab) {
+    const int _urlMaxLength = 22;
+    final _urlLength = webTab.url.length > _urlMaxLength ? _urlMaxLength : webTab.url.length;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(right: 5.0),
+          child: Text(
+            "${webTab.id}",
+            style: TextStyle(fontSize: 12),
+          ),
+        ),
+        Text(
+          "${webTab.url.substring(8, _urlLength)}",
+          style: TextStyle(fontSize: 12),
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.remove,
+            color: Colors.green,
+          ),
+          onPressed: () {
+            setState(() {
+              widget._tabListBloc.removeTab(webTab.id);
+            });
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _tabImageWidget(WebTab webTab) {
-    var tabImageFilePath = widget._tabListBloc.getTabImageFilePath(webTab.id);
+    final tabImageFilePath = widget._tabListBloc.getTabImageFilePath(webTab.id);
     if (tabImageFilePath == null) {
       _loadTabImage(webTab);
       return Image.asset("notfound.png");
@@ -152,7 +160,7 @@ class TabListState extends State<TabListWidget> {
   void _loadTabImage(WebTab webTab) {
     getApplicationDocumentsDirectory().then((var dir) {
       setState(() {
-        String tabImageFilePath =
+        final tabImageFilePath =
             dir.path + "/screenshot" + webTab.getTabIdToThreeWords + ".jpg";
         print("app doc dir : $tabImageFilePath");
         widget._tabListBloc.setTabImageFilePath(webTab.id, tabImageFilePath);

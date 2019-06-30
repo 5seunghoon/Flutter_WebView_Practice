@@ -8,13 +8,13 @@ class TabListBloc {
   static int termOfAnimationMilli = 100;
   static int durationOfAnimationMilli = 200;
 
-  List<WebTab> _tabList = [];
+  final List<WebTab> _tabList = [];
 
   int get tabListLength => _tabList.length;
   bool isReadAllDb = false;
   bool isStartAnimation = false;
 
-  Map<int, String> _tabImageFilePathMap = {};
+  final Map<int, String> _tabImageFilePathMap = {};
 
   List<BoxDecoration> _boxDecorationList = [];
 
@@ -72,8 +72,8 @@ class TabListBloc {
   }
 
   Future<Null> getAllWebTabInDb() async {
-    List<WebTab> webtabs = await WebTab.getAllWebTabs();
-    webtabs.forEach((var webtab) => _tabList.add(webtab));
+    List<WebTab> webTabList = await WebTab.getAllWebTabs();
+    webTabList.forEach((var webTab) => _tabList.add(webTab));
   }
 
   BoxDecoration getBoxDecoration(int index) => _boxDecorationList[index];
@@ -81,7 +81,7 @@ class TabListBloc {
   void initBoxDecorationList() {
     print("init");
     _boxDecorationList = List.generate(
-        _tabList.length, (i) => BoxDecoration(color: Colors.white));
+        _tabList.length, (i) => const BoxDecoration(color: Colors.white));
   }
 
   void startBoxDecorationAnimation(State state) {
@@ -94,7 +94,8 @@ class TabListBloc {
   void _animationBoxDecorationListDelayed(int index, State state) {
     if (index >= _boxDecorationList.length) return;
     Future.delayed(Duration(milliseconds: termOfAnimationMilli), () {
-      _boxDecorationList[index] = BoxDecoration(color: Color(0x00FFFFFF));
+      _boxDecorationList[index] = const BoxDecoration(color: Color(0x00FFFFFF));
+
       state.setState(() {});
       _animationBoxDecorationListDelayed(index + 1, state);
     });

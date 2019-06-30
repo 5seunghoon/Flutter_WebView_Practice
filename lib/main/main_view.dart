@@ -5,14 +5,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../webview/webview_scaffold.dart';
 import '../webview/webview_base.dart';
 import '../util/empty_app_bar.dart';
 import 'main_bloc.dart';
-import '../tablist/tablist_bloc.dart';
 import '../model/webtab.dart';
 
 class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
@@ -72,8 +69,6 @@ class MainWebViewScaffoldState extends State<MainWebViewScaffoldWidget> {
                   id: nowTabId,
                   url: widget._mainWebViewBloc.getUrl(),
                 )).then((_) => Navigator.of(context).pushNamed("/tablist"));
-                //TabListBloc().addExistTab(WebTab(id: nowTabId, url: widget._mainWebViewBloc.getUrl()));
-                //Navigator.of(context).pushNamed("/tablist");
               },
             ),
             IconButton(
