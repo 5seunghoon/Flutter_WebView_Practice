@@ -6,13 +6,13 @@ import '../model/webtab.dart';
 class TabListBloc {
   static final TabListBloc _instance = TabListBloc._internal();
   static int termOfAnimationMilli = 100;
-  static int durationOfAnimationMilli = 200;
+  static int durationOfAnimationMilli = 500;
+  static final baseColor = Colors.indigo;
 
   final List<WebTab> _tabList = [];
 
   int get tabListLength => _tabList.length;
   bool isReadAllDb = false;
-  bool isStartAnimation = false;
 
   final Map<int, String> _tabImageFilePathMap = {};
 
@@ -58,7 +58,6 @@ class TabListBloc {
   }
 
   void dispose() {
-    isStartAnimation = false;
     isReadAllDb = false;
     _tabList.clear();
     tabImageFilePathMapClear();
@@ -71,7 +70,7 @@ class TabListBloc {
     WebTab.deleteWebTab(id);
   }
 
-  Future<Null> getAllWebTabInDb() async {
+  Future<Null> getAllWebTabInDb(State state) async {
     List<WebTab> webTabList = await WebTab.getAllWebTabs();
     webTabList.forEach((var webTab) => _tabList.add(webTab));
   }
@@ -81,21 +80,19 @@ class TabListBloc {
   void initBoxDecorationList() {
     print("init");
     _boxDecorationList = List.generate(
-        _tabList.length, (i) => const BoxDecoration(color: Colors.white));
+        _tabList.length, (i) => BoxDecoration(color: baseColor));
   }
 
   void startBoxDecorationAnimation(State state) {
     print("start animation");
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _animationBoxDecorationListDelayed(0, state);
-    });
+    _animationBoxDecorationListDelayed(0, state);
   }
 
   void _animationBoxDecorationListDelayed(int index, State state) {
     if (index >= _boxDecorationList.length) return;
     Future.delayed(Duration(milliseconds: termOfAnimationMilli), () {
       _boxDecorationList[index] = const BoxDecoration(color: Color(0x00FFFFFF));
-
+      print("start each animation $index");
       state.setState(() {});
       _animationBoxDecorationListDelayed(index + 1, state);
     });

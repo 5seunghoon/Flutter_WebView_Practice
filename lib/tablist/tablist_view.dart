@@ -14,6 +14,7 @@ import '../model/webtab.dart';
 import 'tablist_bloc.dart';
 
 class TabListState extends State<TabListWidget> {
+
   var previewContainer = new GlobalKey();
   TabListBloc _tabListBloc = TabListBloc();
 
@@ -35,21 +36,18 @@ class TabListState extends State<TabListWidget> {
 
     // 탭 리스트를 DB에서 읽은 뒤 setState
     if (!_tabListBloc.isReadAllDb) {
-      _tabListBloc.getAllWebTabInDb().then((_) {
+      _tabListBloc.getAllWebTabInDb(this).then((_) {
         _tabListBloc.isReadAllDb = true; // setState 로 인해 또 호출되는 것을 방지
         _tabListBloc.initBoxDecorationList();
-        setState(() {});
+        setState(() {
+          _tabListBloc.startBoxDecorationAnimation(this);
+        });
       });
-    }
-
-    // 애니메이션을 시작한 뒤 setState
-    if(!_tabListBloc.isStartAnimation){
-      _tabListBloc.isStartAnimation = true; // setState 로 인해 또 호출되는 것을 방지
-      _tabListBloc.startBoxDecorationAnimation(this);
     }
 
     return WillPopScope(
       child: Scaffold(
+        backgroundColor: TabListBloc.baseColor,
         appBar: EmptyAppBar(),
         body: Column(
           children: <Widget>[
@@ -71,7 +69,7 @@ class TabListState extends State<TabListWidget> {
       child: GridView.builder(
         padding: const EdgeInsets.all(4.0),
         gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, childAspectRatio: 0.6),
+            crossAxisCount: 3, childAspectRatio: 0.6),
         itemCount: _tabListBloc.getTabList().length,
         itemBuilder: (context, i) {
           WebTab webTab = _tabListBloc.getTabList()[i];
@@ -92,14 +90,35 @@ class TabListState extends State<TabListWidget> {
             mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              _tabInfoWidget(webTab),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: _tabInfoWidget(webTab),
+              ),
               Center(
                 child: _tabImageWidget(webTab),
               ),
+              _removeTabButton(webTab),
             ],
           ),
           onTap: () => _onTabTap(context, webTab),
         ),
+      ),
+    );
+  }
+
+  Widget _removeTabButton (WebTab webTab){
+    return Expanded(
+      child: GestureDetector(
+        child: Icon(
+          Icons.delete_forever,
+          size: 18,
+          color: Colors.green,
+        ),
+        onTap: () {
+          setState(() {
+            widget._tabListBloc.removeTab(webTab.id);
+          });
+        },
       ),
     );
   }
@@ -114,12 +133,14 @@ class TabListState extends State<TabListWidget> {
   }
 
   Widget _tabInfoWidget(WebTab webTab) {
-    const int _urlMaxLength = 22;
+    const int _urlMaxLength = 25;
     final _urlLength = webTab.url.length > _urlMaxLength ? _urlMaxLength : webTab.url.length;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
+        /*
+        // Tab id
         Padding(
           padding: const EdgeInsets.only(right: 5.0),
           child: Text(
@@ -127,20 +148,10 @@ class TabListState extends State<TabListWidget> {
             style: TextStyle(fontSize: 12),
           ),
         ),
+        */
         Text(
           "${webTab.url.substring(8, _urlLength)}",
-          style: TextStyle(fontSize: 12),
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.remove,
-            color: Colors.green,
-          ),
-          onPressed: () {
-            setState(() {
-              widget._tabListBloc.removeTab(webTab.id);
-            });
-          },
+          style: TextStyle(fontSize: 10),
         ),
       ],
     );
@@ -150,10 +161,10 @@ class TabListState extends State<TabListWidget> {
     final tabImageFilePath = widget._tabListBloc.getTabImageFilePath(webTab.id);
     if (tabImageFilePath == null) {
       _loadTabImage(webTab);
-      return Image.asset("notfound.png");
+      return Image.asset("assets/notfound.png");
     } else {
       print("image path : $tabImageFilePath");
-      return Image.file(File(tabImageFilePath));
+      return Image.file(File(tabImageFilePath), fit: BoxFit.fitWidth,);
     }
   }
 
@@ -172,7 +183,7 @@ class TabListState extends State<TabListWidget> {
     return ListTile(
       title: Icon(
         Icons.add,
-        color: Colors.green,
+        color: Colors.white,
       ),
       onTap: () {
         var newTab = widget._tabListBloc.addNewTab();

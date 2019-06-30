@@ -338,13 +338,18 @@ class WebviewManager {
     void capture(
             int tabId
     ) {
+        int scrollY = webView.getScrollY();
+
+
+        Log.d("LOGGER_TAG", "sy : " + scrollY + ", width : " + webView.getWidth() + ", height :  " + webView.getHeight());
+
         Bitmap captureBitmap = Bitmap.createBitmap(webView.getWidth(),
-                webView.getHeight(), Bitmap.Config.ARGB_8888);
+                webView.getHeight() + scrollY, Bitmap.Config.ARGB_8888);
         Canvas captureCanvas = new Canvas(captureBitmap);
         webView.draw(captureCanvas);
 
         String tabIdStr;
-        if(tabId < 10) tabIdStr = "00" + tabId;
+        if (tabId < 10) tabIdStr = "00" + tabId;
         else if (tabId < 100) tabIdStr = "0" + tabId;
         else tabIdStr = "" + tabId;
 
@@ -352,6 +357,8 @@ class WebviewManager {
         Log.d("LOGGER_TAG", "screenshot path : " + screenShotPath);
         try {
             FileOutputStream fos = new FileOutputStream(screenShotPath);
+            if (scrollY != 0)
+                captureBitmap = Bitmap.createBitmap(captureBitmap, 0, scrollY, webView.getWidth(),webView.getHeight());
             captureBitmap.compress(Bitmap.CompressFormat.JPEG, 50, fos);
             fos.close();
         } catch (IOException e) {
